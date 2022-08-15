@@ -31,7 +31,7 @@ Public Class Common_Procedures
     Public Shared DataBaseName As String
 
     Public Shared First_Opened_Today As Boolean = False
-    Public Shared FnRange As String
+    
     Public Shared FnYearCode As String
     Public Shared CompIdNo As Integer
     Public Shared Company_FromDate As Date
