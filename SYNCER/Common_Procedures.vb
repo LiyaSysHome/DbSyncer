@@ -12,7 +12,7 @@ Imports System.Net.Security
 Imports System.Net.Mail
 
 Public Class Common_Procedures
-    Public Shared Own_Or_Tie As String = "OWN"
+   
 
 
     Public Shared CompanyDetailsDataBaseName As String = "LiyaSys_Syncer_CompanyGroup_Details"
