@@ -10,35 +10,12 @@ Public Class Syncer
 
     Dim DATE_UPDATE_STATUS As Boolean = True
 
-    Public Shared Function GetConnection_MySql_String() As String
+    Public Shared Function GetConnection_Remote_Sql_String() As String
         Dim constr As String
 
+        constr = "Server=liyasys-pc\sql_2016;Database=Liyasys_Syncer;user id =sa; password =123456;Integrated Security=False;Connect Timeout=60"
 
-        '        constr = "Server=liyasys.in\MSSQLSERVER2017;Database=PLit_Admin;user id =liyasys.in; password =j]l(*EN_714utOG; persist security info = False;Trusted_Connection=False;"
-
-        constr = "Server=liyasys-pc\sql_2016;Database=PLit_Admin;user id =sa; password =plit467;Integrated Security=False;Connect Timeout=60"
-
-        '========LIYASYS.DIGITAL=========
-        '-------mk
-
-        'constr = "Server=lkonlineshop.in;port=3306;Database=lkonline_test;Uid=lkonline_test;Pwd=12345;CharSet=utf8;"
-        '-------CLOUD CLUSTER
-        ' constr = "Server=mysql-30529-0.cloudclusters.net;port=30529;Database=plit_billing_1;Uid=admin;Pwd=7x7Yvxsz;CharSet=utf8;"
-
-        '-------BYETHOST
-        'constr = "Server=sql206.byethost7.com;port=3306;Database=b7_28569453_liyasys;Uid=b7_28569453;Pwd=plitlovemore467;CharSet=utf8;"
-        '-------MYGLOBALHOST
-        'constr = "Server=vmi515662.contaboserver.net;Port=;Database=mlzgbioj_liyasys;User ID=mlzgbioj_kathir;Password=lovemore467;"
-
-
-        '======LOCAL HOST=========
-        ' constr = "Server=127.0.0.1;Port=3306;Database=plit_billing_1;User ID=root;Password=;CharSet=utf8;"
-
-
-        '        constr = "server=127.0.0.1;port=;user id=root;password=;database=plit_billing_1"
-
-
-        GetConnection_MySql_String = constr
+        GetConnection_Remote_Sql_String = constr
     End Function
 
     Public Shared Function HaveInternetConnection() As Boolean
@@ -52,13 +29,9 @@ Public Class Syncer
     End Function
     Private Sub START()
 
-        'If HaveInternetConnection() = False Then
-        '    Exit Sub
-        'End If
+      
 
         Get_Actions_from_Process_File()
-
-
 
         If Common_Procedures.CREATE_DATABASE_STATUS = True Then
             pnl_1.Visible = True
@@ -160,7 +133,7 @@ Public Class Syncer
             If File.Exists(pth) = False Then
                 fs = New FileStream(pth, FileMode.Create)
                 w = New StreamWriter(fs)
-                w.WriteLine(SystemInformation.ComputerName & "\sql_2005,plit467")
+                w.WriteLine(SystemInformation.ComputerName & "\sql_2016,liya467")
                 w.Close()
                 fs.Close()
                 w.Dispose()
@@ -283,30 +256,17 @@ Public Class Syncer
 
         cn1.Open()
 
-
-
         GET_CONNECTION()
 
-
-
-
         Timer1.Enabled = True
-        'Timer2.Enabled = True
 
-        'GET_TABLES_FROM_DATABASE_FOR_CREATE_TRIGGER()
     End Sub
     Private Sub GET_CONNECTION()
-        Dim cn1 As SqlClient.SqlConnection
-        Dim con_my As SqlClient.SqlConnection
         Dim cmd_mysql As New SqlClient.SqlCommand
-        Dim trans_mysql As SqlTransaction
         Dim cmd As New SqlClient.SqlCommand
-        Dim IdNo As Integer, Nr As Integer
-        'Dim DBPartName As String
-
+        Dim IdNo As Integer
         Dim da As New SqlClient.SqlDataAdapter
         Dim dt As New DataTable
-
         Dim da1 As New SqlClient.SqlDataAdapter
         Dim dt1 As New DataTable
         Dim query As String = ""
@@ -332,12 +292,7 @@ CHANGE_ID:
                 Common_Procedures.DataBaseName = Common_Procedures.DATABASE_NAME
 
 
-                'Common_Procedures.DataBaseName = Common_Procedures.get_Company_DataBaseName(Trim(Val(IdNo)))
-
-
                 Common_Procedures.Connection_String = Common_Procedures.Create_Sql_ConnectionString(Common_Procedures.DataBaseName)
-
-
 
             Else
                 IdNo = IdNo + 1
@@ -358,18 +313,13 @@ CHANGE_ID:
     Private Sub Syncer_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
 
 
-        If My.Computer.Network.IsAvailable Then
-
-            ' LBL_TITLE.Text = "Connected"
-            ' LBL_TITLE.ForeColor = Color.Green
-        Else
-            ' LBL_TITLE.Text = "NO INTERNET CONNECTION AVAILABLE"
-            ' LBL_TITLE.ForeColor = Color.Red
+        If Not My.Computer.Network.IsAvailable Then
             Me.Close()
         End If
 
         Me.Width = 140
         Me.Height = 25
+
         Me.Location() = New Point(Screen.PrimaryScreen.WorkingArea.Width - Me.Width, Screen.PrimaryScreen.WorkingArea.Top) ' Me.Height)
 
         Get_Actions_from_Process_File()
@@ -411,7 +361,7 @@ CHANGE_ID:
         Application.Exit()
     End Sub
 
-   
+
     Private Sub GET_DATA_FROM_TRIGGER()
         Dim cn1 As SqlClient.SqlConnection
         Dim cmd As New SqlClient.SqlCommand
@@ -420,8 +370,7 @@ CHANGE_ID:
         Dim cmd_mysql As New SqlCommand
         Dim trans_mysql As SqlTransaction
 
-        Dim IdNo As Integer, Nr As Integer
-        'Dim DBPartName As String
+        Dim Nr As Integer
 
         Dim da As New SqlClient.SqlDataAdapter
         Dim dt As New DataTable
@@ -440,7 +389,7 @@ CHANGE_ID:
             cn1 = New SqlClient.SqlConnection(Common_Procedures.Connection_String)
             cn1.Open()
 
-            con_my = New SqlConnection(GetConnection_MySql_String)
+            con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my.Open()
 
 
@@ -482,7 +431,7 @@ CHANGE_ID:
                     End If
 
 
-                  
+
 
 
                     If UCase(Trim(dt.Rows(I)("Command").ToString)) = "DELETE" Then
@@ -727,7 +676,7 @@ CHANGE_ID:
                         End If
 
 
-                        
+
                         'da1 = New SqlClient.SqlDataAdapter("select * from " & Trim(dt.Rows(I)("Table_Name").ToString) & IIf(Trim(Primary_Key1) <> "", " WHERE " & Trim(Primary_Key1), " ") & IIf(Trim(Primary_Key2) <> "", " AND " & Trim(Primary_Key2), " ") & IIf(Trim(Primary_Key3) <> "", " AND " & Trim(Primary_Key3), " "), cn1)
                         dt1 = New DataTable
                         da1.Fill(dt1)
@@ -966,7 +915,7 @@ CHANGE_ID:
         ProgressBar1.Value = 0
 
         Try
-            con_my = New SqlConnection(GetConnection_MySql_String)
+            con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my.Open()
 
 
@@ -1089,45 +1038,6 @@ LOOP_NEXT_TABLE:
 
                             Next COLUMN_INDX
 
-
-                            ''CHECKING PRIMARY KEY
-                            'da_CONS = New SqlClient.SqlDataAdapter("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1 AND TABLE_NAME = '" & Trim(dt_TABLE.Rows(TABLE_INDX).Item("TABLE_NAME").ToString) & "' AND TABLE_SCHEMA = 'DBO'", CON)
-                            'dt_CONS = New DataTable
-                            'da_CONS.Fill(dt_CONS)
-                            'If dt_CONS.Rows.Count > 0 Then
-                            '    For CONS_INDX = 0 To dt_CONS.Rows.Count - 1
-                            '        If Trim(dt_CONS.Rows(CONS_INDX).Item("CONSTRAINT_NAME").ToString) <> "" Then
-                            '            'CHECKING PRIMARY KEY COLUMN
-                            '            If Trim(dt_CONS.Rows(CONS_INDX).Item("CONSTRAINT_NAME").ToString) <> "" And Sub_Query <> "" And Microsoft.VisualBasic.Left((dt_CONS.Rows(CONS_INDX).Item("CONSTRAINT_NAME").ToString), 2) = "PK" Then
-
-                            '                Sub_Query = Sub_Query & ", CONSTRAINT [" & Trim(dt_CONS.Rows(CONS_INDX).Item("CONSTRAINT_NAME").ToString) & " ]  PRIMARY KEY CLUSTERED ( "
-
-                            '                da_KEY = New SqlClient.SqlDataAdapter("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1 AND TABLE_NAME = '" & Trim(dt_TABLE.Rows(TABLE_INDX).Item("TABLE_NAME").ToString) & "' AND TABLE_SCHEMA = 'DBO' AND CONSTRAINT_NAME = '" & Trim(dt_CONS.Rows(CONS_INDX).Item("CONSTRAINT_NAME").ToString) & "'", CON)
-                            '                dt_KEY = New DataTable
-                            '                da_KEY.Fill(dt_KEY)
-                            '                If dt_KEY.Rows.Count > 0 Then
-                            '                    For KEY_INDX = 0 To dt_KEY.Rows.Count - 1
-                            '                        If Trim(dt_KEY.Rows(KEY_INDX).Item("COLUMN_NAME").ToString) <> "" Then
-                            '                            'CHECKING PRIMARY KEY COLUMN
-                            '                            If Trim(dt_KEY.Rows(KEY_INDX).Item("COLUMN_NAME").ToString) <> "" And Sub_Query <> "" Then
-                            '                                Sub_Query = Sub_Query & IIf(Sub_Query <> "", ",", "") & " [ " & Trim(dt_KEY.Rows(KEY_INDX).Item("COLUMN_NAME").ToString) & " ] "
-                            '                            End If
-                            '                        End If
-
-                            '                    Next KEY_INDX
-                            '                End If
-                            '                dt_KEY.Clear()
-                            '                dt_KEY.Dispose()
-                            '                da_KEY.Dispose()
-
-                            '            End If
-                            '        End If
-
-                            '    Next CONS_INDX
-                            'End If
-                            'dt_CONS.Clear()
-                            'dt_CONS.Dispose()
-                            'da_CONS.Dispose()
 
                             da_KEY = New SqlClient.SqlDataAdapter("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1 AND TABLE_NAME = '" & Trim(dt_TABLE.Rows(TABLE_INDX).Item("TABLE_NAME").ToString) & "' AND TABLE_SCHEMA = 'DBO'", CON)
                             dt_KEY = New DataTable
@@ -1266,7 +1176,7 @@ END_TASK:
         ProgressBar2.Value = 0
 
         Try
-            con_my = New SqlConnection(GetConnection_MySql_String)
+            con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my.Open()
 
 
@@ -1479,7 +1389,7 @@ END_TASK:
         Try
 
 
-            con_my = New SqlConnection(GetConnection_MySql_String)
+            con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my.Open()
 
 
@@ -1733,7 +1643,7 @@ END_TASK:
         ProgressBar1.Value = 0
 
         Try
-            con_my = New SqlConnection(GetConnection_MySql_String)
+            con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my.Open()
 
 
@@ -1987,13 +1897,13 @@ END_TASK:
                       "~ReportTemp~" & _
                       "~ReportTempSub~" & _
                       "~Trigger_Head~"
-                        
+
 
         Timer1.Stop()
         Timer2.Stop()
 
         Try
-            ' con_my = New SqlConnection(GetConnection_MySql_String)
+            ' con_my = New SqlConnection(GetConnection_Remote_Sql_String)
             con_my = New SqlClient.SqlConnection(Common_Procedures.Connection_String)
 
             con_my.Open()
@@ -2146,7 +2056,7 @@ LOOP_NEXT_TABLE:
 
 
 
-       
+
 
             MessageBox.Show("Created Successfully", "", MessageBoxButtons.OK, MessageBoxIcon.Information)
 END_TASK:
